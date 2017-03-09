@@ -21,6 +21,11 @@
     "service_type": "stock",
     "request_id": "buystockbymaketvalue_302"
   },
+  "sellmarket" : {
+    "service_type": "stock",
+    "request_id": "sellstockbymaketvalue_302"
+  },
+
   "sell": {
     "service_type": "stock",
     "request_id": "sellstock_302"

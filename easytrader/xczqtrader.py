@@ -150,9 +150,9 @@ class XCZQTrader(WebTrader):
     def buy(self, stock_code, price, amount=0, volume=0, order_type='limit'):
         """买入卖出股票
         :param stock_code: 股票代码
-        :param price: 卖出价格
-        :param amount: 卖出股数
-        :param volume: 卖出总金额 由 volume / price 取整， 若指定 price 则此参数无效
+        :param price: 买入价格, 对于市价单，price 无意义
+        :param amount: 买入股数
+        :param volume: 买入总金额 由 volume / price 取整， 若指定 price 则此参数无效
         :param order_type: 委托类型，默认为limit - 限价委托,  也可以为makret - 最优五档即时成交剩余转限价。
         """
         if order_type == 'limit':
@@ -174,19 +174,31 @@ class XCZQTrader(WebTrader):
             return None
         return self.__trade(stock_code, price, entrust_prop=entrust_prop, other=params)
 
-    def sell(self, stock_code, price, amount=0, volume=0, entrust_prop=0):
+    def sell(self, stock_code, price, amount=0, volume=0, order_type='limit'):
         """卖出股票
         :param stock_code: 股票代码
-        :param price: 卖出价格
+        :param price: 卖出价格, 对于市价单，price 无意义
         :param amount: 卖出股数
         :param volume: 卖出总金额 由 volume / price 取整， 若指定 amount 则此参数无效
         :param entrust_prop: 委托类型，暂未实现，默认为限价委托
         """
-        params = dict(
-            self.config['sell'],
-            entrust_bs=2,  # 买入1 卖出2
-            entrust_amount=amount if amount else volume // price
-        )
+        if order_type == 'limit':
+            entrust_prop = 0
+            params = dict(
+                self.config['sell'],
+                entrust_bs=2,  # 买入1 卖出2
+                entrust_amount=amount if amount else volume // price
+            )
+        elif order_type == 'market':
+            entrust_prop = 'R'
+            params = dict(
+                self.config['sellmarket'],
+                entrust_bs=2,  # 买入1 卖出2
+                entrust_amount=amount if amount else volume // price
+            )
+        else:
+            log.debug('订单类型不支持: %s' % (order_type))
+            return None
         return self.__trade(stock_code, price, entrust_prop=entrust_prop, other=params)
 
     def get_ipo_limit(self, stock_code):
